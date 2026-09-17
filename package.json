@@ -1,0 +1,14 @@
+{
+  "name": "text-url-downloader",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TextDown — paste a text/code URL, edit it, download it with a custom filename and extension.",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node --test test/"
+  },
+  "engines": {
+    "node": "22.x"
+  },
+  "license": "MIT"
+}

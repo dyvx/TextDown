@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>TextDown — Text &amp; Code URL Downloader</title>
+<meta name="description" content="Paste any text or code URL, fetch it, edit it in a highlighted editor, and download it with a custom filename and extension. Runs entirely in your browser." />
+<meta name="color-scheme" content="dark light" />
+<meta name="theme-color" content="#080a12" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%234cc9ff'/%3E%3Cstop offset='1' stop-color='%23a78bfa'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect x='3' y='3' width='26' height='26' rx='7' fill='%230b1220' stroke='url(%23g)' stroke-width='1.5'/%3E%3Cpath d='M11 12.5h10M11 16.5h7' stroke='url(%23g)' stroke-width='2' stroke-linecap='round'/%3E%3Cpath d='M16 20v5m0 0-2.4-2.4M16 25l2.4-2.4' stroke='url(%23g)' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E" />
+<link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+<div class="bg" aria-hidden="true">
+  <span class="orb orb-1"></span>
+  <span class="orb orb-2"></span>
+  <span class="orb orb-3"></span>
+  <span class="grid"></span>
+</div>
+
+<div class="dropzone" id="dropzone" aria-hidden="true">
+  <div class="dz-inner">
+    <svg class="dz-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4 20h16"/></svg>
+    <p class="dz-title">Drop a text or code file</p>
+    <p class="dz-sub">.txt .lua .luau .js .ts .json .html .css .xml .md — up to 8&nbsp;MB</p>
+  </div>
+</div>
+
+<header class="topbar">
+  <a class="brand" href="#source">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7.5h16"/><path d="M4 12h10"/><path d="M12 15.5v5"/><path d="m9.6 18.1 2.4 2.4 2.4-2.4"/></svg>
+    </span>
+    <span class="brand-text">
+      <strong>TextDown</strong>
+      <em>text &amp; code url downloader</em>
+    </span>
+  </a>
+  <div class="topbar-actions">
+    <span class="pill" id="netPill" title="How this app is allowed to reach other servers">
+      <span class="dot dot-idle"></span><span id="netPillText">checking…</span>
+    </span>
+    <button class="icon-btn" id="themeBtn" type="button" aria-label="Toggle colour theme" title="Toggle theme">
+      <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.6v2.2M12 19.2v2.2M2.6 12h2.2M19.2 12h2.2M5.4 5.4l1.6 1.6M17 17l1.6 1.6M18.6 5.4 17 7M7 17l-1.6 1.6"/></svg>
+      <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.2A8.2 8.2 0 0 1 9.8 4a8.4 8.4 0 1 0 10.2 10.2Z"/></svg>
+    </button>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <h1>Paste a link. Edit it. <span class="grad">Download it as your file.</span></h1>
+    <p class="hero-sub">Fetches any text or code URL, drops it into a syntax-highlighted editor, and saves it with the exact name and extension you choose. No account, no upload, no server storage.</p>
+  </section>
+
+  <!-- ══════════════ 1. SOURCE ══════════════ -->
+  <section class="card" id="source">
+    <div class="card-head">
+      <span class="step">1</span>
+      <div class="card-title">
+        <h2>Source</h2>
+        <p>Point it at raw text — a gist, a CDN file, an API response, a config URL.</p>
+      </div>
+    </div>
+
+    <form class="url-row" id="fetchForm" autocomplete="off" novalidate>
+      <div class="field grow">
+        <label class="sr-only" for="urlInput">Text or code URL</label>
+        <input id="urlInput" class="input input-lg" type="url" inputmode="url" spellcheck="false"
+               placeholder="Paste a text/code URL…  https://example.com/script.lua" list="recentUrls" />
+        <datalist id="recentUrls"></datalist>
+      </div>
+      <div class="url-actions">
+        <button class="btn btn-primary btn-lg" id="fetchBtn" type="submit">
+          <svg class="btn-ico spin-target" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v9"/><path d="m8.2 8.6 3.8 3.9 3.8-3.9"/><path d="M4.5 15.5v3a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-3"/></svg>
+          <span class="btn-label">Fetch</span>
+        </button>
+        <button class="btn btn-ghost" id="uploadBtn" type="button" title="Open a local text or code file">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 16.5V19a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2.5"/><path d="M12 15.5V4"/><path d="m7.8 8.2 4.2-4.2 4.2 4.2"/></svg>
+          <span>Upload</span>
+        </button>
+        <input type="file" id="fileInput" accept=".txt,.lua,.luau,.js,.mjs,.cjs,.jsx,.ts,.tsx,.json,.jsonc,.html,.htm,.css,.scss,.less,.xml,.svg,.md,.markdown,.yaml,.yml,.toml,.ini,.cfg,.conf,.py,.sh,.text/*" multiple hidden />
+      </div>
+    </form>
+
+    <div class="sub-row">
+      <label class="check" title="If the browser blocks a direct fetch, retry through a public CORS relay">
+        <input type="checkbox" id="useProxy" checked />
+        <span>Public CORS fallback</span>
+      </label>
+      <div class="inline-field">
+        <label for="timeoutSel">Timeout</label>
+        <select id="timeoutSel" class="select select-sm">
+          <option value="15">15s</option>
+          <option value="25" selected>25s</option>
+          <option value="60">60s</option>
+        </select>
+      </div>
+      <p class="hint-row">…or drag &amp; drop a text file anywhere on this page.</p>
+    </div>
+
+    <div class="error-panel" id="errorPanel" role="alert" hidden>
+      <div class="err-top">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 8.5v5"/><circle cx="12" cy="16.8" r=".9" fill="currentColor" stroke="none"/><path d="M10.3 3.9 2.6 17.4a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>
+        <div>
+          <strong id="errTitle">Could not fetch that URL</strong>
+          <p id="errMsg"></p>
+        </div>
+        <button class="icon-btn err-close" id="errClose" type="button" aria-label="Dismiss error">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m6 6 12 12M18 6 6 18"/></svg>
+        </button>
+      </div>
+      <p class="err-explain" id="errExplain" hidden></p>
+      <details class="err-log">
+        <summary>What was attempted <span id="errRouteCount" class="muted"></span></summary>
+        <ul id="errRoutes"></ul>
+      </details>
+      <div class="err-actions" id="errActions"></div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 2. CONTENT ══════════════ -->
+  <section class="card" id="editorCard">
+    <div class="card-head">
+      <span class="step">2</span>
+      <div class="card-title">
+        <h2>Content</h2>
+        <p id="editorHint">Nothing loaded yet — fetch a URL, upload a file, or just start typing.</p>
+      </div>
+      <div class="card-tools">
+        <label class="sr-only" for="langSelect">Syntax highlighting language</label>
+        <select id="langSelect" class="select select-sm lang-select" title="Syntax highlighting language"></select>
+        <button class="icon-btn" id="wrapBtn" type="button" aria-pressed="false" title="Toggle word wrap (Alt+Z)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 6.5h17"/><path d="M3.5 12h13a3 3 0 0 1 0 6H13"/><path d="m15.4 15.6-2.4 2.4 2.4 2.4"/><path d="M3.5 21.5h4"/></svg>
+        </button>
+        <button class="icon-btn" id="copyBtn" type="button" title="Copy content (Ctrl/⌘+Shift+C)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="11.5" height="11.5" rx="2.4"/><path d="M15 6.2A2.2 2.2 0 0 0 12.8 4H6.2A2.2 2.2 0 0 0 4 6.2v6.6A2.2 2.2 0 0 0 6.2 15"/></svg>
+        </button>
+        <button class="icon-btn icon-danger" id="clearBtn" type="button" title="Clear / reset everything">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 6.5h15"/><path d="M9.5 6.5V5a1.5 1.5 0 0 1 1.5-1.5h2A1.5 1.5 0 0 1 14.5 5v1.5"/><path d="M6.5 6.5 7.4 19a2 2 0 0 0 2 1.9h5.2a2 2 0 0 0 2-1.9l.9-12.5"/><path d="M10.5 10.5v6M13.5 10.5v6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="editor-shell">
+      <div class="editor" id="editor">
+        <div class="gutter" id="gutter" aria-hidden="true"><div class="gutter-inner">1</div></div>
+        <div class="editor-scroll" id="editorScroll">
+          <pre class="editor-pre" aria-hidden="true"><code id="hl"></code><br /></pre>
+          <textarea id="ta" class="editor-ta" spellcheck="false" autocapitalize="off" autocorrect="off"
+                    wrap="off" aria-label="Editable file content"></textarea>
+        </div>
+      </div>
+      <div class="editor-overlay" id="editorOverlay">
+        <div class="overlay-card">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 3.5h5.6l4.7 4.7v12.3a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14.6 3.6v4.6h4.6"/><path d="M8.4 13h7.2M8.4 16.4h4.6"/></svg>
+          <p>Nothing loaded yet</p>
+          <span>Fetch a URL, upload a file, or start typing.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="statusbar">
+      <span id="statChars">0 chars</span><span class="sep"></span>
+      <span id="statLines">1 line</span><span class="sep"></span>
+      <span id="statBytes">0 B</span><span class="sep"></span>
+      <span id="statSel" class="muted">no selection</span>
+      <span class="grow"></span>
+      <span id="statEnc" class="muted">UTF-8</span>
+    </div>
+
+    <div class="srcbar" id="srcBar" hidden>
+      <div class="src-meta">
+        <span class="pill" id="srcStatus"><span class="dot"></span><span></span></span>
+        <span class="muted" id="srcType"></span>
+        <span class="muted" id="srcSize"></span>
+        <span class="muted" id="srcRoute"></span>
+        <span class="muted" id="srcTime"></span>
+      </div>
+      <div class="src-actions">
+        <button class="btn btn-xs btn-ghost" id="asIsBtn" type="button" title="Save the fetched content without your edits">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="m8 10.5 4 4 4-4"/><path d="M4.5 17.5v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/></svg>
+          Download original
+        </button>
+        <a class="src-link" id="srcLink" href="#" target="_blank" rel="noopener noreferrer">open source ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════ 3. SAVE AS ══════════════ -->
+  <section class="card" id="saveCard">
+    <div class="card-head">
+      <span class="step">3</span>
+      <div class="card-title">
+        <h2>Save as</h2>
+        <p>Pick a name and an extension — or let TextDown guess one.</p>
+      </div>
+      <div class="card-tools">
+        <button class="btn btn-xs btn-ghost" id="autoBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.6 2.2 4.6 4.8.6-3.5 3.4.9 4.8L5 23.6"/><path d="M12 2.5 13.6 7l4.5 1.6-4.5 1.6L12 14.7l-1.6-4.5L5.9 8.6 10.4 7Z"/><path d="M19 14.5l.9 2.3 2.3.9-2.3.9-.9 2.3-.9-2.3-2.3-.9 2.3-.9Z"/></svg>
+          Auto-detect
+        </button>
+      </div>
+    </div>
+
+    <div class="save-grid">
+      <div class="field grow">
+        <label for="nameInput">File name</label>
+        <input id="nameInput" class="input" type="text" spellcheck="false" placeholder="script" />
+      </div>
+      <div class="field" style="min-width:132px">
+        <label for="extSelect">Extension</label>
+        <select id="extSelect" class="select"></select>
+      </div>
+      <div class="field field-custom" id="customExtField" hidden>
+        <label for="customExtInput">Custom ext</label>
+        <input id="customExtInput" class="input" type="text" spellcheck="false" maxlength="12" placeholder="cfg" />
+      </div>
+    </div>
+
+    <div class="presets" id="presets" role="group" aria-label="Preset extensions"></div>
+
+    <div class="save-row">
+      <div class="preview-chip" title="Exact file name that will be written">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9.2 3.5h5.6l4.7 4.7v12.3a1 1 0 0 1-1 1H5.5a1 1 0 0 1-1-1V4.5a1 1 0 0 1 1-1Z"/><path d="M14.6 3.6v4.6h4.6"/></svg>
+        <span id="filePreview">download.txt</span>
+      </div>
+      <div class="save-opts">
+        <div class="inline-field">
+          <label for="eolSel">EOL</label>
+          <select id="eolSel" class="select select-sm">
+            <option value="lf" selected>LF</option>
+            <option value="crlf">CRLF</option>
+            <option value="keep">Keep</option>
+          </select>
+        </div>
+        <div class="inline-field">
+          <label for="encSel">Encoding</label>
+          <select id="encSel" class="select select-sm">
+            <option value="utf8" selected>UTF-8</option>
+            <option value="utf8bom">UTF-8 BOM</option>
+            <option value="utf16le">UTF-16LE</option>
+          </select>
+        </div>
+        <div class="inline-field">
+          <label for="dlModeSel">Save</label>
+          <select id="dlModeSel" class="select select-sm">
+            <option value="auto" selected>Auto</option>
+            <option value="dialog">Save As…</option>
+            <option value="blob">Direct download</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary btn-lg btn-dl" id="downloadBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5v11"/><path d="m8 10.5 4 4 4-4"/><path d="M4.5 17.5v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2v-1"/></svg>
+        <span>Download File</span>
+      </button>
+    </div>
+    <p class="hint-row" id="saveHint">Everything is written by your browser — the content never leaves this page.</p>
+  </section>
+
+  <footer class="foot">
+    <p>TextDown · zero accounts · your content is never uploaded · downloads happen locally</p>
+    <p class="muted">Optional: run <code>node server.js</code> next to <code>index.html</code> to enable a same-origin fetch proxy for CORS-blocked URLs.</p>
+  </footer>
+</main>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+<div class="loading" id="loading" hidden>
+  <div class="load-card">
+    <span class="spinner"></span>
+    <div class="load-text">
+      <strong id="loadTitle">Fetching…</strong>
+      <span id="loadSub">contacting origin</span>
+    </div>
+  </div>
+</div>
+
+<script src="./syntax.js"></script>
+<script src="./app.js"></script>
+</body>
+</html>
