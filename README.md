@@ -46,8 +46,14 @@ vercel            # preview deployment
 vercel --prod     # production
 ```
 
-`vercel.json` pins `maxDuration: 30` for the proxy function and adds
-`nosniff` / referrer / frame security headers.
+`vercel.json` only adds `nosniff` / referrer / frame security headers. It deliberately
+has **no** `functions` block: Vercel discovers `api/*.js` with zero config, and a
+`functions` key that fails to match aborts the whole build with
+`unmatched-function-pattern`.
+
+The proxy times out at 9 s to fit Vercel's default 10 s `maxDuration`. To allow longer
+fetches, raise **Project Settings → Functions → Max Duration** and set a matching
+`TIMEOUT_MS` environment variable.
 
 ### Differences between the two runtimes
 

@@ -11,7 +11,9 @@
 const core = require('../proxy-core.js');
 
 const MAX_BYTES = Number(process.env.MAX_BYTES) || 4 * 1024 * 1024;
-const TIMEOUT_MS = Number(process.env.TIMEOUT_MS) || 20000;
+// Vercel's default function maxDuration is 10 s on Hobby, so stay inside it.
+// Raise both together: Project Settings -> Functions -> Max Duration, then TIMEOUT_MS.
+const TIMEOUT_MS = Number(process.env.TIMEOUT_MS) || 9000;
 const MAX_REDIRECTS = 3;
 
 function send(res, status, headers, body) {
